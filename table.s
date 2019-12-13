@@ -31,7 +31,7 @@ main:
 	addi	$t4,	$zero,	0	# $t4 = 0 (for counter)
 	addi 	$t5,	$zero,	0	# $t5 = 0 (index for array, adds 4 every time)
 	addi	$t6,	$zero,	0	# $t6 = 0 (used for filling array, never changes)
-	t
+
 for:	
 	bge	$t4,	$s0,	continue	# Check condition of 'for'
 	
@@ -63,8 +63,28 @@ continue:
 	
 	# Get user input
 	li	$v0,	4
-	la	$a0,	choose
+	la	$a0,	choose	
 	syscall
+	li	$v0,	5	# Read user input
+	syscall
+	move 	$t7,	$v0	# $t7 = readInt();
+	
+	# At this point, $t4 + $t5 + $t6 are available for use
+	
+	addi	$t4,	$zero,	1		# $t4 = 1
+	beq	$t7,	$t4,	insert		# if (choice == 1)
+	addi	$t4,	$zero,	2		# $t4 = 2
+	beq	$t7,	$t4,	find		# if (choice == 2)
+	addi	$t4,	$zero,	3		# $t4 = 3
+	beq	$t7,	$t4,	show		# if (choice == 3)
+	addi	$t4,	$zero,	4		# $t4 = 4
+	beq	$t7,	$t4,	terminate	# if (choice == 4) exit;
+	
+	j	continue
+	
+insert:
+find:
+show:
 
 terminate:
 
