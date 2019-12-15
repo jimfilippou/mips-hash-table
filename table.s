@@ -8,11 +8,7 @@
 	pos:		.word	0
 	choice:		.word	0
 	telos:		.word	0
-	menu:		.asciiz "Menu\n"
-	insertKey:	.asciiz "1.Insert key"
-	findKey:	.asciiz "2.Find key"
-	displayTable:	.asciiz "3.Display Hash Table"
-	exit:		.asciiz "4.Exit"
+	menu:		.asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
 	choose:		.asciiz "\nChoose operation:"
 
 .text
@@ -48,18 +44,6 @@ continue:
 	li	$v0,	4
 	la	$a0,	menu
 	syscall
-	li	$v0,	4
-	la	$a0,	insertKey
-	syscall
-	li	$v0,	4
-	la	$a0,	findKey
-	syscall
-	li	$v0,	4
-	la	$a0,	displayTable
-	syscall
-	li	$v0,	4
-	la	$a0,	exit
-	syscall
 	
 	# Get user input
 	li	$v0,	4
@@ -82,6 +66,7 @@ continue:
 	
 	j	continue
 	
+
 insert:
 find:
 show:
