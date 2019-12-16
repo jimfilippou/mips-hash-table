@@ -9,6 +9,7 @@
 	choice:		.word	0
 	telos:		.word	0
 	menu:		.asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
+	diplayTemplate:	.asciiz	"\npos key\n"
 	choose:		.asciiz "\nChoose operation:"
 
 .text
@@ -55,21 +56,49 @@ continue:
 	
 	# At this point, $t4 + $t5 + $t6 are available for use
 	
-	addi	$t4,	$zero,	1		# $t4 = 1
-	beq	$t7,	$t4,	insert		# if (choice == 1)
-	addi	$t4,	$zero,	2		# $t4 = 2
-	beq	$t7,	$t4,	find		# if (choice == 2)
-	addi	$t4,	$zero,	3		# $t4 = 3
-	beq	$t7,	$t4,	show		# if (choice == 3)
-	addi	$t4,	$zero,	4		# $t4 = 4
-	beq	$t7,	$t4,	terminate	# if (choice == 4) exit;
+	# Start control flow
+	addi	$t4,	$zero,	1
+	beq	$t7,	$t4,	insert			# if (choice == 1) go to insert
+	addi	$t4,	$zero,	2
+	beq	$t7,	$t4,	find			# if (choice == 2) go to find
+	addi	$t4,	$zero,	3
+	beq	$t7,	$t4,	displayTable	# if (choice == 3) go to show
+	addi	$t4,	$zero,	4
+	beq	$t7,	$t4,	terminate		# if (choice == 4) exit;
+	# End control flow
+	
+	
+	# At this point, $t4 is available for use
 	
 	j	continue
 	
 
 insert:
+
 find:
-show:
+
+displayTable:
+	addi	$t4,	$zero,	0
+	addi	$t5,	$zero,	0
+	li	$v0,	4
+	la	$a0,	menu
+	syscall
+	displayFor:
+		beq	$t4,	$s0,	terminate
+		lw	$t6,    hash($t5)
+		li	$v0,	1
+		move	$a0,	$t4
+		syscall
+		li	$v0,	1
+		move	$a0,	$t6
+		syscall
+		li	$v0,	4
+		la	$a0,	crlf
+		syscall
+		addi	$t4,	$t4,	1
+		addi	$t5,	$t5,	4
+		j displayFor
+	
 
 terminate:
 
