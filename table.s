@@ -1,3 +1,6 @@
+# 3160253 - Dimitris Filippou
+# 3160242 - Leonidas Velentzas
+
 .data
 	crlf:		.asciiz	"\n"
 	.align 2
@@ -60,7 +63,7 @@ continue:
 	addi	$t4,	$zero,	1
 	beq	$t7,	$t4,	insert			# if (choice == 1) go to insert
 	addi	$t4,	$zero,	2
-	beq	$t7,	$t4,	find			# if (choice == 2) go to find
+	beq	$t7,	$t4,	findKey			# if (choice == 2) go to find
 	addi	$t4,	$zero,	3
 	beq	$t7,	$t4,	displayTable	# if (choice == 3) go to show
 	addi	$t4,	$zero,	4
@@ -75,14 +78,14 @@ continue:
 
 insert:
 
-find:
+findKey:
+	addi	$t4,	$t4,	0	# $t4 = position = 0
+	addi	$t5,	$t5,	0	# $t5 = i = 0
+	addi	$t6,	$t6,	0	# $t6 = found = 0
 
 displayTable:
 	addi	$t4,	$zero,	0
 	addi	$t5,	$zero,	0
-	li	$v0,	4
-	la	$a0,	menu
-	syscall
 	displayFor:
 		beq	$t4,	$s0,	terminate
 		lw	$t6,    hash($t5)
