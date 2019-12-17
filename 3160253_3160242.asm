@@ -15,6 +15,7 @@
     diplayTemplate: .asciiz	"\npos key\n"
     choose:			.asciiz "\nChoose operation:"
     askKey:         .asciiz "Give key to search for"
+    notInTableStr:     .asciiz "Key not in hash table.\n"
 
 .text
 .globl main
@@ -80,9 +81,20 @@ continue:
         li      $v0,    5
         syscall
         move    $t4,    $v0
-        lw      $a0,    hash
-        move    $a1,    $t4
+        
+        lw      $a0,    hash    # Pass argument: hash
+        move    $a1,    $t4     # Pass argument: key to find
         jal     findKey
+        
+        move    $t8,    $v0     # Store output to $t8
+
+        beq     $t8,    -1,    notInTable
+
+        notInTable:
+            li      $v0,    4
+            la      $a0,    notInTableStr
+            syscall
+
 
     # At this point, $t4 is available for use
 
