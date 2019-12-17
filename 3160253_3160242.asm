@@ -11,11 +11,11 @@
     pos:			.word	0
     choice:			.word	0
     telos:			.word	0
-    menu:			.asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
+    menu:           .asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
     diplayTemplate: .asciiz	"\npos key\n"
-    choose:			.asciiz "\nChoose operation:"
+    choose:         .asciiz "\nChoose operation:"
     askKey:         .asciiz "Give key to search for"
-    notInTableStr:     .asciiz "Key not in hash table.\n"
+    notInTableStr:  .asciiz "Key not in hash table.\n"
 
 .text
 .globl main
