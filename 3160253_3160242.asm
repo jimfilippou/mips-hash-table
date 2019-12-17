@@ -69,9 +69,9 @@ continue:
     # End control flow
 
     prepareToDisplayTable:
-        lw    $a0,    hash
-        jal   displayTable
-        j     continue
+        lw      $a0,    hash
+        jal     displayTable
+        j       continue
     
     prepareToFindKey:
         li      $v0,    4
@@ -91,26 +91,14 @@ continue:
 
 insert:
 
-findKey:
-    # MOD Formula: k % N == ( k & ( N-1 ) )
-    # Arguments: k: $t7, N: $s0
-    
-    addi    $t2,    $zero,    0   # $t2 = 0 (store result)
-    addi    $t3,    $zero,    0   # $t3 = 0 (store y-1)
+findKey:   
+    addi    $t4,    $zero,    0    # $t4 = 0 (position)
+    addi    $t5,    $zero,    0    # $t5 = 0 (i)
+    addi    $t6,    $zero,    0    # $t6 = 0 (found)
+    move    $t7,    $a1            # $t7 = Argument (k)
+    rem     $t4,    $a1,      $s0  # $t4 = $a1 % $s0 (position = k % N)
 
-    addi    $t4,    $zero,    0   # $t4 = 0 (position)
-    addi    $t5,    $zero,    0   # $t5 = 0 (i)
-    addi    $t6,    $zero,    0   # $t6 = 0 (found)
-    move    $t7,    $a1           # $t7 = Argument
 
-    addi    $t3,    $s0,      -1  # $t3 = N - 1
-    and     $t2,    $t7,      $t3 # $t2 = k & (N - 1)
-
-    # -- DEBUG -- #
-    li      $v0,    1
-    move    $a0,    $t2
-    syscall
-    # -- DEBUG -- #
 
     jr      $ra
 
