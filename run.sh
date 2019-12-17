@@ -1,0 +1,1 @@
+java -jar mars.jar 3160253_3160242.asm
