@@ -1,1 +1,1 @@
-java -jar nc mars.jar 3160253_3160242.asm
+java -jar mars.jar nc 3160253_3160242.asm

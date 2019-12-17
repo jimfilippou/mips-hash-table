@@ -14,6 +14,7 @@
     menu:			.asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
     diplayTemplate: .asciiz	"\npos key\n"
     choose:			.asciiz "\nChoose operation:"
+    askKey:         .asciiz "Give key to search for"
 
 .text
 .globl main
@@ -60,13 +61,28 @@ continue:
     addi    $t4,    $zero,  1
     beq     $t7,    $t4,    insert
     addi    $t4,    $zero,  2
-    beq     $t7,    $t4,    findKey
+    beq     $t7,    $t4,    prepareToFindKey
     addi    $t4,    $zero,  3
-    beq     $t7,    $t4,    displayTable
+    beq     $t7,    $t4,    prepareToDisplayTable
     addi    $t4,    $zero,  4
     beq     $t7,    $t4,    terminate
     # End control flow
 
+    prepareToDisplayTable:
+        lw    $a0,    hash
+        jal   displayTable
+        j     continue
+    
+    prepareToFindKey:
+        li      $v0,    4
+        la      $a0,    askKey
+        syscall
+        li      $v0,    5
+        syscall
+        move    $t4,    $v0
+        lw      $a0,    hash
+        move    $a1,    $t4
+        jal     findKey
 
     # At this point, $t4 is available for use
 
@@ -76,15 +92,34 @@ continue:
 insert:
 
 findKey:
-    addi    $t4,    $t4,    0   # $t4 = position = 0
-    addi    $t5,    $t5,    0   # $t5 = i = 0
-    addi    $t6,    $t6,    0   # $t6 = found = 0
+    # MOD Formula: k % N == ( k & ( N-1 ) )
+    # Arguments: k: $t7, N: $s0
+    
+    addi    $t2,    $zero,    0   # $t2 = 0 (store result)
+    addi    $t3,    $zero,    0   # $t3 = 0 (store y-1)
+
+    addi    $t4,    $zero,    0   # $t4 = 0 (position)
+    addi    $t5,    $zero,    0   # $t5 = 0 (i)
+    addi    $t6,    $zero,    0   # $t6 = 0 (found)
+    move    $t7,    $a1           # $t7 = Argument
+
+    addi    $t3,    $s0,      -1  # $t3 = N - 1
+    and     $t2,    $t7,      $t3 # $t2 = k & (N - 1)
+
+    # -- DEBUG -- #
+    li      $v0,    1
+    move    $a0,    $t2
+    syscall
+    # -- DEBUG -- #
+
+    jr      $ra
 
 displayTable:
-    addi    $t4,    $zero,  0
-    addi    $t5,    $zero,  0
+    addi    $t4,    $zero,  0   # $t4 = 0 (for loop index)
+    addi    $t5,    $zero,  0   # $t5 = 0 (array indexing)
+    move    $t6,    $a0         # Passed but not used 
     displayFor:
-        beq     $t4,    $s0,    terminate
+        beq     $t4,    $s0,    displayExit
         lw      $t6,    hash($t5)
         li      $v0,    1
         move    $a0,    $t4
@@ -98,6 +133,8 @@ displayTable:
         addi    $t4,    $t4,    1
         addi    $t5,    $t5,    4
         j       displayFor
+    displayExit:
+        jr     $ra
 
 
 terminate:
