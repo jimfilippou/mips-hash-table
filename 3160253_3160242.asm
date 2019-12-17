@@ -2,15 +2,15 @@
 # 3160242 - Leonidas Velentzas
 
 .data
-    crlf: 			.asciiz "\n"
+    crlf:           .asciiz "\n"
     .align 2
-    hash: 			.space 40
-    N: 				.word 10
-    key:			.word	0
-    keys:			.word	0
-    pos:			.word	0
-    choice:			.word	0
-    telos:			.word	0
+    hash:           .space  40
+    N:              .word   10
+    key:            .word   0
+    keys:           .word   0
+    pos:            .word   0
+    choice:         .word   0
+    telos:          .word   0
     menu:           .asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
     diplayTemplate: .asciiz	"\npos key\n"
     choose:         .asciiz "\nChoose operation:"
