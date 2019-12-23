@@ -104,39 +104,38 @@ continue:
 insert:
 
 findKey:   
-    addi    $t4,    $zero,    0    # $t4 = 0 (position)
-    addi    $t5,    $zero,    0    # $t5 = 0 (i)
-    addi    $t6,    $zero,    0    # $t6 = 0 (found)
-    move    $t7,    $a1            # $t7 = Argument (k)
-    rem     $t4,    $a1,      $s0  # $t4 = $a1 % $s0 (position = k % N)
+    addi    $t4,    $zero,    0             # $t4 = 0 (position)
+    addi    $t5,    $zero,    0             # $t5 = 0 (i)
+    addi    $t6,    $zero,    0             # $t6 = 0 (found)
+    move    $t7,    $a1                     # $t7 = Argument (k)
+    rem     $t4,    $a1,      $s0           # $t4 = $a1 % $s0 (position = k % N)
 
     while:
         bge    $t5,    $s0,    exitWhile    # If (i >= N)     exit while
         bne    $t6,    $zero,  exitWhile    # If (found !==0) exit while
         addi   $t5,    $t5,    1            # i++
-
         mul    $t3,    $t5,    4            # $t3 = i * 4 (Will hold array index)
         lw     $t2,    hash($t3)            # $t2 = hash[$t3]
-
         beq    $t2,    $t7,    found
         j      notFound
-        found:
-            addi    $t6,    $zero,    1     # found = 1
-            j       exitWhile
+    
+    found:
+        addi    $t6,    $zero,    1         # found = 1
+        j       exitWhile                   # Exit the while loop
 
-        notFound:
-            addi    $t4,    $t4,      1     # position++
-            rem     $t4,    $t4,      $s0   # position %= N
+    notFound:
+        addi    $t4,    $t4,      1         # position++
+        rem     $t4,    $t4,      $s0       # position %= N
 
     exitWhile:
-        bne    $t6,    1,     returnMinusOne
-        move   $v0,    $t4                  # return position
-        jr     $ra
+        bne    $t6,    1,     returnMinusOne# prepare to return -1 (was not found)
+        move   $v0,    $t4                  # set return value to position
+        jr     $ra                          # jump to register and return
 
     returnMinusOne:
-        addi   $v0,    $zero, -1            # return -1
+        addi   $v0,    $zero, -1            # set return value to return -1
 
-    jr      $ra
+    jr      $ra                             # return
 
 displayTable:
     addi    $t4,    $zero,  0   # $t4 = 0 (for loop index)
