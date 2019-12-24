@@ -27,8 +27,8 @@
 
 main:
 
-    lw      $s0,    N                   # N    = 10
-    lw      $s1,    keys                # keys = 0
+    lw      $s0,    N                   # N      = 10
+    lw      $s1,    keys                # keys   = 0
     lw      $t0,    key                 # key    = 0
     lw      $t1,    pos                 # pos    = 0
     lw      $t2,    choice              # choice = 0
@@ -62,20 +62,16 @@ continue:
 
     # At this point, $t4 + $t5 + $t6 are available for use
 
-    # *--------------------*
-    # | Start control flow |
-    # *--------------------*
-    addi    $t4,    $zero,  1
-    beq     $t7,    $t4,    prepareToInsert
-    addi    $t4,    $zero,  2
-    beq     $t7,    $t4,    prepareToFindKey
-    addi    $t4,    $zero,  3
-    beq     $t7,    $t4,    prepareToDisplayTable
-    addi    $t4,    $zero,  4
-    beq     $t7,    $t4,    terminate
-    # *--------------------*
-    # |  End control flow  |
-    # *--------------------*
+    # *----------------------*
+    # |  Start control flow  |
+    # *----------------------*
+    beq     $t7,    1,    prepareToInsert
+    beq     $t7,    2,    prepareToFindKey
+    beq     $t7,    3,    prepareToDisplayTable
+    beq     $t7,    4,    terminate
+    # *----------------------*
+    # |   End control flow   |
+    # *----------------------*
 
     prepareToInsert:
         la      $a0,    giveKey
@@ -85,13 +81,13 @@ continue:
         blt     $t4,    $zero,    keyLessThanZero
 
         move    $a0,    $t4    # Supply argument
-        jal     insert
+        jal     insertKey
+        j       continue
         
         keyLessThanZero:
             la    $a0,    lessThanZero
             jal   print
-        
-        j       continue
+            j     continue
 
 
     prepareToDisplayTable:
@@ -124,8 +120,21 @@ continue:
     j       continue
 
 
-insert:
+insertKey:
     jr    $ra
+
+hashFunction:
+    move  $t4,    $a0              # int k (argument)
+    addi  $t5,    $zero,    1      # int position = 0
+    rem   $t5,    $t4,      $s0    # position = k % N
+    hashWhile:
+        beq    $t5,    $zero,    returnPos
+        
+        j      hashWhile
+    
+    returnPos:
+        move    $v0,    $t5
+        jr      $ra
 
 findKey:   
     addi    $t4,    $zero,    0             # $t4 = 0 (position)
