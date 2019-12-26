@@ -23,6 +23,7 @@
     lessThanZero:   .asciiz "Key must be greater than zero"
     alreadyIn:      .asciiz "Key is already in hash table.\n"
     hashFull:       .asciiz "Hash table is full.\n"
+    debugMessage:   .asciiz "edo"
 
 .text
 .globl main
@@ -96,8 +97,8 @@ continue:
         jal     print                                # Jump and link to print helper (for strings only)
         jal     readInt                              # Jump and link to readInt helper returns .word on addr $v0
         move    $t4,    $v0
-        lw      $a0,    hash               # Pass argument: hash
-        move    $a1,    $t4                # Pass argument: key to find
+        move    $a0,    $t4                # Pass argument: key to find
+        lw      $a1,    hash               # Pass argument: hash
         jal     findKey                    # Execute findKey
         move    $t8,    $v0                # Store output to $t8
         beq     $t8,    -1,    notInTable  # If ($t8 == -1)
@@ -112,6 +113,10 @@ continue:
     j       continue
 
 
+# *------------------------------------------------------------------------------*
+# | This function is of void type, even though it is called with jal. When this  |
+# | function terminates, $ra is being reset to $zero and the menu loop continues.|
+# *------------------------------------------------------------------------------*
 insertKey:
 
     move    $t4,    $a0            # $t4 = $a0 = k (Argument passed)
@@ -121,7 +126,7 @@ insertKey:
     jal     findKey                # Jump and link to findKey with one argument
     move    $t5,    $v0            # Store result to $t5 (position)
 
-    beq     $t5,    -1,       keyAlreadyInTable
+    bne     $t5,    -1,       keyAlreadyInTable
     bge     $s1,    $s0,      hashTableFull
 
     move    $a0,    $t4            # Supply argument to hashFunction
@@ -166,12 +171,12 @@ hashFunction:
         move    $v0,    $t5    # Return position
         jr      $ra            # Jump to return address
 
-findKey:   
+findKey:
     addi    $t4,    $zero,    0             # $t4 = 0 (position)
     addi    $t5,    $zero,    0             # $t5 = 0 (i)
     addi    $t6,    $zero,    0             # $t6 = 0 (found)
-    move    $t7,    $a1                     # $t7 = Argument (k)
-    rem     $t4,    $a1,      $s0           # $t4 = $a1 % $s0 (position = k % N)
+    move    $t7,    $a0                     # [ERROR] $t7 = Argument (k) IS ZERO
+    rem     $t4,    $t7,      $s0           # $t4 = $a1 % $s0 (position = k % N)
 
     while:
         bge    $t5,    $s0,    exitWhile    # If (i >= N)     exit while
@@ -197,7 +202,7 @@ findKey:
 
     returnMinusOne:
         addi   $v0,    $zero, -1            # set return value to return -1
-        jr      $ra                         # return
+        jr     $ra                          # return
 
 displayTable:
     addi    $t4,    $zero,  0   # $t4 = 0 (for loop index)
@@ -231,6 +236,11 @@ displayTable:
 # | Helper functions |
 # *------------------*
 
+printInteger:
+    li      $v0,    1
+    syscall
+    jr      $ra
+
 print:
     li      $v0,    4
     syscall
@@ -238,6 +248,12 @@ print:
 
 readInt:
     li      $v0,    5
+    syscall
+    jr      $ra
+
+debugThis:
+    li      $v0,    4
+    la      $a0,    debugMessage
     syscall
     jr      $ra
 
