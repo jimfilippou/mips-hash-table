@@ -79,7 +79,6 @@ continue:
         blt     $t4,    $zero,    keyLessThanZero
         move    $a0,    $t4                          # Supply string argument
         jal     insertKey                            # Jump and link to insertKey with just $a0
-        j       continue                             # When insertKey finishes (void) & returns nothing, continue menu loop
         
         keyLessThanZero:
             la    $a0,    lessThanZero
@@ -93,13 +92,9 @@ continue:
         j       continue
     
     prepareToFindKey:
-
-        la      $a0,    askKey
-        jal     print
-
-        li      $v0,    5
-        syscall
-
+        la      $a0,    askKey                       # Supply string argument
+        jal     print                                # Jump and link to print helper (for strings only)
+        jal     readInt                              # Jump and link to readInt helper returns .word on addr $v0
         move    $t4,    $v0
         lw      $a0,    hash               # Pass argument: hash
         move    $a1,    $t4                # Pass argument: key to find
@@ -127,7 +122,7 @@ insertKey:
     move    $t5,    $v0            # Store result to $t5 (position)
 
     beq     $t5,    -1,       keyAlreadyInTable
-    bgt     $s1,    $s0,      hashTableFull
+    bge     $s1,    $s0,      hashTableFull
 
     move    $a0,    $t4            # Supply argument to hashFunction
     jal     hashFunction           # Jump and link to hashFunction with one argument
@@ -137,19 +132,22 @@ insertKey:
     sw      $t4,    hash($t6)      # Store word $t4 on hash[$t6]
     addi    $s1,    $s1,      1    # $s1++ or keys++
 
-    jr      $ra                    # Finish and return to return address
+    move    $ra,    $zero
+    j       continue               # Finish and return to return address
 
     hashTableFull:
-        la    $a0,    hashFull
-        li    $v0,    4
+        la      $a0,    hashFull
+        li      $v0,    4
         syscall
-        jr    $ra
+        move    $ra,    $zero
+        j       continue 
 
     keyAlreadyInTable:
-        la    $a0,    alreadyIn
-        li    $v0,    4
+        la      $a0,    alreadyIn
+        li      $v0,    4
         syscall
-        jr    $ra
+        move    $ra,    $zero
+        j       continue 
 
 hashFunction:
     move  $t4,    $a0              # int k (argument)
@@ -199,8 +197,7 @@ findKey:
 
     returnMinusOne:
         addi   $v0,    $zero, -1            # set return value to return -1
-
-    jr      $ra                             # return
+        jr      $ra                         # return
 
 displayTable:
     addi    $t4,    $zero,  0   # $t4 = 0 (for loop index)
