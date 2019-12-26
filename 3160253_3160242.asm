@@ -15,12 +15,14 @@
     choice:         .word   0
     telos:          .word   0
     menu:           .asciiz "Menu\n1.Insert key\n2.Find key\n3.Display Hash Table\n4.Exit\n"
-    diplayTemplate: .asciiz	"\npos key\n"
+    diplayTemplate: .asciiz "\npos key\n"
     choose:         .asciiz "\nChoose operation:"
     askKey:         .asciiz "Give key to search for: "
     notInTableStr:  .asciiz "Key not in hash table.\n"
     giveKey:        .asciiz "Give a new key (greater than zero): "
     lessThanZero:   .asciiz "Key must be greater than zero"
+    alreadyIn:      .asciiz "Key is already in hash table.\n"
+    hashFull:       .asciiz "Hash table is full.\n"
 
 .text
 .globl main
@@ -47,42 +49,37 @@ for:
 
 continue:
 
-    # Print the menu
-    la      $a0,    menu
-    jal     print
+    la      $a0,    menu      # Supply string argument
+    jal     print             # Jump and link to print helper (for strings only)
 
-    # Get user input
-    la      $a0,    choose
-    jal     print
+    la      $a0,    choose    # Supply string argument
+    jal     print             # Jump and link to print helper (for strings only)
 
-    li	    $v0,    5       # Read user input
-    syscall
+    li	    $v0,    5         # Prepare to read user input
+    syscall                   # Execute
 
-    move    $t7,    $v0     # $t7 = readInt();
+    move    $t7,    $v0       # $t7 = $v0 (readInt)
 
-    # At this point, $t4 + $t5 + $t6 are available for use
-
-    # *----------------------*
-    # |  Start control flow  |
-    # *----------------------*
+    # *----------------------------------------*
+    # |           Start control flow           |
+    # *----------------------------------------*
     beq     $t7,    1,    prepareToInsert
     beq     $t7,    2,    prepareToFindKey
     beq     $t7,    3,    prepareToDisplayTable
     beq     $t7,    4,    terminate
-    # *----------------------*
-    # |   End control flow   |
-    # *----------------------*
+    # *----------------------------------------*
+    # |           End control flow             |
+    # *----------------------------------------*
 
     prepareToInsert:
-        la      $a0,    giveKey
-        jal     print
-        jal     readInt
-        move    $t4,    $v0
+        la      $a0,    giveKey                      # Supply string argument
+        jal     print                                # Jump and link to print helper (for strings only)
+        jal     readInt                              # Jump and link to readInt helper returns .word on addr $v0
+        move    $t4,    $v0                          # Save returned word to $t4
         blt     $t4,    $zero,    keyLessThanZero
-
-        move    $a0,    $t4    # Supply argument
-        jal     insertKey
-        j       continue
+        move    $a0,    $t4                          # Supply string argument
+        jal     insertKey                            # Jump and link to insertKey with just $a0
+        j       continue                             # When insertKey finishes (void) & returns nothing, continue menu loop
         
         keyLessThanZero:
             la    $a0,    lessThanZero
@@ -121,20 +118,55 @@ continue:
 
 
 insertKey:
-    jr    $ra
+
+    move    $t4,    $a0            # $t4 = $a0 = k (Argument passed)
+    addi    $t5,    $zero,    0    # $t5 = 0 (position)
+
+    move    $a0,    $t4            # Supply argument to findKey
+    jal     findKey                # Jump and link to findKey with one argument
+    move    $t5,    $v0            # Store result to $t5 (position)
+
+    beq     $t5,    -1,       keyAlreadyInTable
+    bgt     $s1,    $s0,      hashTableFull
+
+    move    $a0,    $t4            # Supply argument to hashFunction
+    jal     hashFunction           # Jump and link to hashFunction with one argument
+    move    $t5,    $v0            # Store result to $t5 (position)
+
+    mul     $t6,    $t5,      4    # $t6 = $t5 * 4 for .word indexing
+    sw      $t4,    hash($t6)      # Store word $t4 on hash[$t6]
+    addi    $s1,    $s1,      1    # $s1++ or keys++
+
+    jr      $ra                    # Finish and return to return address
+
+    hashTableFull:
+        la    $a0,    hashFull
+        li    $v0,    4
+        syscall
+        jr    $ra
+
+    keyAlreadyInTable:
+        la    $a0,    alreadyIn
+        li    $v0,    4
+        syscall
+        jr    $ra
 
 hashFunction:
     move  $t4,    $a0              # int k (argument)
     addi  $t5,    $zero,    1      # int position = 0
     rem   $t5,    $t4,      $s0    # position = k % N
+    
     hashWhile:
-        beq    $t5,    $zero,    returnPos
-        
-        j      hashWhile
+        mul     $t6,    $t5,      4             # $t6 = position * 4
+        lw      $t7,    hash($t6)               # $t7 = hash[position] return position
+        beq     $t7,    $zero,    returnPos     # If hash[$t6] == 0
+        addi    $t5,    $t5,      1             # $t5++
+        rem     $t5,    $t5,      $s0           # $t5 %= N
+        j       hashWhile
     
     returnPos:
-        move    $v0,    $t5
-        jr      $ra
+        move    $v0,    $t5    # Return position
+        jr      $ra            # Jump to return address
 
 findKey:   
     addi    $t4,    $zero,    0             # $t4 = 0 (position)
@@ -185,8 +217,11 @@ displayTable:
         move    $a0,    $t6
         syscall
         
+        #la      $a0,    crlf    # Why this doesn't work?
+        #jal     print           # Why this doesn't work? 
         la      $a0,    crlf
-        jal     print
+        li      $v0,    4
+        syscall
 
         addi    $t4,    $t4,    1
         addi    $t5,    $t5,    4
