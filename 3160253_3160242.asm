@@ -5,6 +5,7 @@
 # *------------------------------*
 
 .data
+    arrow:          .asciiz " -> "
     crlf:           .asciiz "\n"
     .align 2
     hash:           .space  40
@@ -211,8 +212,13 @@ displayTable:
     displayFor:
         beq     $t4,    $s0,    displayExit
         lw      $t6,    hash($t5)
+
         li      $v0,    1
         move    $a0,    $t4
+        syscall
+
+        li      $v0,    4
+        la      $a0,    arrow
         syscall
 
         li      $v0,    1
@@ -263,7 +269,6 @@ debugThis:
 terminate:
     li    $v0,    10
     syscall
-
 
 
 
