@@ -24,7 +24,7 @@
     lessThanZero:   .asciiz "Key must be greater than zero"
     alreadyIn:      .asciiz "Key is already in hash table.\n"
     hashFull:       .asciiz "Hash table is full.\n"
-    debugMessage:   .asciiz "edo"
+    debugMessage:   .asciiz "+"
 
 .text
 .globl main
@@ -74,29 +74,29 @@ continue:
     # *----------------------------------------*
 
     prepareToInsert:
-        la      $a0,    giveKey                      # Supply string argument
-        jal     print                                # Jump and link to print helper (for strings only)
-        jal     readInt                              # Jump and link to readInt helper returns .word on addr $v0
-        move    $t4,    $v0                          # Save returned word to $t4
-        blt     $t4,    $zero,    keyLessThanZero
-        move    $a0,    $t4                          # Supply string argument
-        jal     insertKey                            # Jump and link to insertKey with just $a0
+        la      $a0,    giveKey            # Supply string argument
+        jal     print                      # Jump and link to print helper (for strings only)
+        jal     readInt                    # Jump and link to readInt helper returns .word on addr $v0
+        move    $t4,    $v0                # Save returned word to $t4
+        blt     $t4,    $zero,    kltz     # if ($t4 < 0) goto kltz (KeyLessThanZero)
+        move    $a0,    $t4                # Supply string argument
+        jal     insertKey                  # Jump and link to insertKey with just $a0
         
-        keyLessThanZero:
-            la    $a0,    lessThanZero
-            jal   print
-            j     continue
+        kltz:
+            la    $a0,    lessThanZero     # Supply string argument
+            jal   print                    # Jump and link to print helper (for strings only)
+            j     continue                 # Once print returns to execution point, continue loop
 
 
     prepareToDisplayTable:
-        lw      $a0,    hash
-        jal     displayTable
-        j       continue
+        lw      $a0,    hash               # Supply the array as argument
+        jal     displayTable               # Jump and link to displayTable procedure
+        j       continue                   # Once displayTable returns, continue the loop
     
     prepareToFindKey:
-        la      $a0,    askKey                       # Supply string argument
-        jal     print                                # Jump and link to print helper (for strings only)
-        jal     readInt                              # Jump and link to readInt helper returns .word on addr $v0
+        la      $a0,    askKey             # Supply string argument
+        jal     print                      # Jump and link to print helper (for strings only)
+        jal     readInt                    # Jump and link to readInt helper returns .word on addr $v0
         move    $t4,    $v0
         move    $a0,    $t4                # Pass argument: key to find
         lw      $a1,    hash               # Pass argument: hash
@@ -105,13 +105,10 @@ continue:
         beq     $t8,    -1,    notInTable  # If ($t8 == -1)
 
         notInTable:
-            la      $a0,    notInTableStr
-            jal     print
+            la      $a0,    notInTableStr  # Supply string argument
+            jal     print                  # Jump and link to print helper (for strings only)
 
-
-    # At this point, $t4 is available for use
-
-    j       continue
+    j       continue                       # Continue loop (only gets executed after prepareToFindKey)
 
 
 # *------------------------------------------------------------------------------*
@@ -138,22 +135,22 @@ insertKey:
     sw      $t4,    hash($t6)      # Store word $t4 on hash[$t6]
     addi    $s1,    $s1,      1    # $s1++ or keys++
 
-    move    $ra,    $zero
-    j       continue               # Finish and return to return address
+    move    $ra,    $zero          # Set $ra to $zero, because we don't want to save the return address
+    j       continue               # Return to main loop
 
     hashTableFull:
         la      $a0,    hashFull
         li      $v0,    4
         syscall
-        move    $ra,    $zero
-        j       continue 
+        move    $ra,    $zero      # Set $ra to $zero, because we don't want to save the return address
+        j       continue           # Return to main loop
 
     keyAlreadyInTable:
-        la      $a0,    alreadyIn
+        la      $a0,    alreadyIn  
         li      $v0,    4
-        syscall
-        move    $ra,    $zero
-        j       continue 
+        syscall                    # Print alreadyIn message
+        move    $ra,    $zero      # Set $ra to $zero, because we don't want to save the return address
+        j       continue           # Return to main loop
 
 hashFunction:
     move  $t4,    $a0              # int k (argument)
@@ -215,24 +212,22 @@ displayTable:
 
         li      $v0,    1
         move    $a0,    $t4
-        syscall
+        syscall                      # Print index
 
         li      $v0,    4
         la      $a0,    arrow
-        syscall
+        syscall                      # Print a pretty arrow
 
         li      $v0,    1
         move    $a0,    $t6
-        syscall
-        
-        #la      $a0,    crlf    # Why this doesn't work?
-        #jal     print           # Why this doesn't work? 
+        syscall                      # Print value
+    
         la      $a0,    crlf
         li      $v0,    4
-        syscall
+        syscall                      # Print new line
 
-        addi    $t4,    $t4,    1
-        addi    $t5,    $t5,    4
+        addi    $t4,    $t4,    1    # $t4++
+        addi    $t5,    $t5,    4    # $t5+=4
         j       displayFor
     displayExit:
         jr     $ra
