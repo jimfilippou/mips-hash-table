@@ -1,7 +1,5 @@
 # *------------------------------*
-# | Authors:                     |
-# | 3160253 - Dimitris Filippou  |
-# | 3160242 - Leonidas Velentzas |
+# | Author: Dimitris Filippou    |
 # *------------------------------*
 
 .data
